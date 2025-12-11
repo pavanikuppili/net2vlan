@@ -138,7 +138,11 @@ for nodeName in nodeList:
 
     link_vlan_1.addInterface(fpga_iface1)
     link_vlan_2.addInterface(fpga_iface2)
-    lan.addInterface(host_iface1)
+
+    if not(i%2):
+        link_vlan_1.addInterface(host_iface1)
+    else:
+        link_vlan_2.addInterface(host_iface1)
   
     i+=1
 
