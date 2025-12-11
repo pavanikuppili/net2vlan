@@ -76,8 +76,22 @@ params = pc.bindParameters()
   
 pc.verifyParameters()
 
+
+# Service lan
 lan = request.LAN()
 lan.best_effort = True
+
+# Link VLAN 1
+link_vlan_1 = request.LAN("link_vlan_1")
+link_vlan_1.best_effort = True
+link_vlan_1.vlan_tag = 10
+
+# Link VLAN 2
+link_vlan_2 = request.LAN("link_vlan_2")
+link_vlan_2.best_effort = True
+link_vlan_2.vlan_tag = 20
+
+
 nodeList = params.nodes.split(',')
 i = 0
 for nodeName in nodeList:
@@ -99,14 +113,14 @@ for nodeName in nodeList:
 
     cmd = "sudo /local/repository/post-boot.sh {} {} {} >> /local/logs/output_log.txt 2>&1".format(params.workflow, params.toolVersion, params.remoteDesktop)
     host.addService(pg.Execute(shell="bash", command=cmd))
-  
+
     # Since we want to create network links to the FPGA, it has its own identity.
     fpga = request.RawPC("fpga-" + nodeName)
     # UMass cluster
     fpga.component_manager_id = "urn:publicid:IDN+cloudlab.umass.edu+authority+cm"
     # Assign to the fgpa node
     fpga.component_id = "fpga-" + nodeName
-    # Use the default image for the type of the node selected. 
+    # Use the default image for the type of the node selected.
     fpga.setUseTypeDefaultImage()
 
     # Secret sauce.
@@ -114,19 +128,20 @@ for nodeName in nodeList:
 
     host_iface1 = host.addInterface()
     host_iface1.component_id = "eth2"
-    host_iface1.addAddress(pg.IPv4Address("192.168.40." + str(i+30), "255.255.255.0")) 
+    host_iface1.addAddress(pg.IPv4Address("192.168.40." + str(i+30), "255.255.255.0"))
     fpga_iface1 = fpga.addInterface()
     fpga_iface1.component_id = "eth0"
     fpga_iface1.addAddress(pg.IPv4Address("192.168.40." + str(i+10), "255.255.255.0"))
     fpga_iface2 = fpga.addInterface()
     fpga_iface2.component_id = "eth1"
     fpga_iface2.addAddress(pg.IPv4Address("192.168.40." + str(i+20), "255.255.255.0"))
-    
-    lan.addInterface(fpga_iface1)
-    lan.addInterface(fpga_iface2)
+
+    link_vlan_1.addInterface(fpga_iface1)
+    link_vlan_2.addInterface(fpga_iface2)
     lan.addInterface(host_iface1)
   
     i+=1
+
 
 # Print Request RSpec
 pc.printRequestRSpec(request)
