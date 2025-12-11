@@ -77,10 +77,6 @@ params = pc.bindParameters()
 pc.verifyParameters()
 
 
-# Service lan
-lan = request.LAN()
-lan.best_effort = True
-
 # Link VLAN 1
 link_vlan_1 = request.LAN("link_vlan_1")
 link_vlan_1.best_effort = True
@@ -136,14 +132,16 @@ for nodeName in nodeList:
     fpga_iface2.component_id = "eth1"
     fpga_iface2.addAddress(pg.IPv4Address("192.168.40." + str(i+20), "255.255.255.0"))
 
-    link_vlan_1.addInterface(fpga_iface1)
-    link_vlan_2.addInterface(fpga_iface2)
 
-    if i%2 :
-        link_vlan_2.addInterface(host_iface1)
-    else:
+    if i == 0:
+        # Main FPGA host
+       link_vlan_1.addInterface(fpga_iface1)
+       link_vlan_2.addInterface(fpga_iface2)
+       link_vlan_2.addInterface(host_iface1)
+    elif i == 1:
         link_vlan_1.addInterface(host_iface1)
-
+    elif i == 2:
+        link_vlan_2.addInterface(host_iface1)
   
     i+=1
 
