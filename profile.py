@@ -80,12 +80,12 @@ pc.verifyParameters()
 # Link VLAN 1
 link_vlan_1 = request.LAN("link_vlan_1")
 link_vlan_1.best_effort = True
-link_vlan_1.vlan_tag = 10
+link_vlan_1.vlan_tag = 2711
 
 # Link VLAN 2
 link_vlan_2 = request.LAN("link_vlan_2")
 link_vlan_2.best_effort = True
-link_vlan_2.vlan_tag = 20
+link_vlan_2.vlan_tag = 2712
 
 
 nodeList = params.nodes.split(',')
