@@ -77,15 +77,18 @@ params = pc.bindParameters()
 pc.verifyParameters()
 
 
-# Link VLAN 1
-link_vlan_1 = request.LAN("link_vlan_1")
-link_vlan_1.best_effort = True
-link_vlan_1.vlan_tag = 2711
+lan1 = request.Link("link1", "vlan")
+lan2 = request.Link("link2", "vlan")
 
-# Link VLAN 2
-link_vlan_2 = request.LAN("link_vlan_2")
-link_vlan_2.best_effort = True
-link_vlan_2.vlan_tag = 2712
+lan1.setVlanTag(2711)
+lan2.setVlanTag(2712)
+
+lan1.link_multiplexing = True
+lan1.best_effort = True
+
+lan2.link_multiplexing = True
+lan2.best_effort = True
+
 
 
 nodeList = params.nodes.split(',')
@@ -122,26 +125,36 @@ for nodeName in nodeList:
     # Secret sauce.
     fpga.SubNodeOf(host)
 
-    host_iface1 = host.addInterface()
-    host_iface1.component_id = "eth2"
-    host_iface1.addAddress(pg.IPv4Address("192.168.40." + str(i+30), "255.255.255.0"))
-    fpga_iface1 = fpga.addInterface()
-    fpga_iface1.component_id = "eth0"
-    fpga_iface1.addAddress(pg.IPv4Address("192.168.40." + str(i+10), "255.255.255.0"))
-    fpga_iface2 = fpga.addInterface()
-    fpga_iface2.component_id = "eth1"
-    fpga_iface2.addAddress(pg.IPv4Address("192.168.40." + str(i+20), "255.255.255.0"))
-
-
+    # Main FPGA host
     if i == 0:
-        # Main FPGA host
-       link_vlan_1.addInterface(fpga_iface1)
-       link_vlan_2.addInterface(fpga_iface2)
-       link_vlan_2.addInterface(host_iface1)
+      #add host cNIC interface to vlan2
+      host_iface1 = host.addInterface()
+      host_iface1.component_id = "eth3"
+      host_iface1.addAddress(pg.IPv4Address("192.168.40." + str(i+30), "255.255.255.0"))
+      lan2.addInterface(host_iface1)
+
+      #add one fpga interface to vlan1
+      fpga_iface1 = fpga.addInterface()
+      fpga_iface1.component_id = "eth0"
+      fpga_iface1.addAddress(pg.IPv4Address("192.168.50." + str(i+10), "255.255.255.0"))
+      lan1.addInterface(fpga_iface1)
+
+      #add another fpga interface to vlan2 same has cNIC interface
+      fpga_iface2 = fpga.addInterface()
+      fpga_iface2.component_id = "eth1"
+      fpga_iface2.addAddress(pg.IPv4Address("192.168.50." + str(i+20), "255.255.255.0"))
+      lan2.addInterface(fpga_iface2)
+      
     elif i == 1:
-        link_vlan_1.addInterface(host_iface1)
+      fpga_iface1 = fpga.addInterface()
+      fpga_iface1.component_id = "eth0"
+      fpga_iface1.addAddress(pg.IPv4Address("192.168.50." + str(i+10), "255.255.255.0"))
+      lan1.addInterface(fpga_iface1)
     elif i == 2:
-        link_vlan_2.addInterface(host_iface1)
+      fpga_iface1 = fpga.addInterface()
+      fpga_iface1.component_id = "eth0"
+      fpga_iface1.addAddress(pg.IPv4Address("192.168.50." + str(i+10), "255.255.255.0"))
+      lan2.addInterface(fpga_iface1)
   
     i+=1
 
