@@ -110,38 +110,25 @@ for nodeName in nodeList:
     cmd = "sudo /local/repository/post-boot.sh {} {} {} >> /local/logs/output_log.txt 2>&1".format(params.workflow, params.toolVersion, params.remoteDesktop)
     host.addService(pg.Execute(shell="bash", command=cmd))
 
-    # Since we want to create network links to the FPGA, it has its own identity.
-    fpga = request.RawPC("fpga-" + nodeName)
-    # UMass cluster
-    fpga.component_manager_id = "urn:publicid:IDN+cloudlab.umass.edu+authority+cm"
-    # Assign to the fgpa node
-    fpga.component_id = "fpga-" + nodeName
-    # Use the default image for the type of the node selected.
-    fpga.setUseTypeDefaultImage()
 
-    # Secret sauce.
-    fpga.SubNodeOf(host)
+    host_iface0 = host.addInterface()
+    host_iface0.component_id = "eth0"
+    host_iface0.addAddress(pg.IPv4Address("192.168.40." + str(i+30), "255.255.255.0"))
 
-    host_iface1 = host.addInterface()
-    host_iface1.component_id = "eth2"
-    host_iface1.addAddress(pg.IPv4Address("192.168.40." + str(i+30), "255.255.255.0"))
-    fpga_iface1 = fpga.addInterface()
-    fpga_iface1.component_id = "eth0"
-    fpga_iface1.addAddress(pg.IPv4Address("192.168.40." + str(i+10), "255.255.255.0"))
-    fpga_iface2 = fpga.addInterface()
-    fpga_iface2.component_id = "eth1"
-    fpga_iface2.addAddress(pg.IPv4Address("192.168.40." + str(i+20), "255.255.255.0"))
+    if i == 0:
+        host_iface1 = host.addInterface()
+        host_iface1.component_id = "eth1"
+        host_iface1.addAddress(pg.IPv4Address("192.168.40." + str(i+30), "255.255.255.0"))
 
 
     if i == 0:
-        # Main FPGA host
-       link_vlan_1.addInterface(fpga_iface1)
-       link_vlan_2.addInterface(fpga_iface2)
+        # Central host
+       link_vlan_1.addInterface(host_iface0)
        link_vlan_2.addInterface(host_iface1)
     elif i == 1:
-        link_vlan_1.addInterface(host_iface1)
+        link_vlan_1.addInterface(host_iface0)
     elif i == 2:
-        link_vlan_2.addInterface(host_iface1)
+        link_vlan_2.addInterface(host_iface0)
   
     i+=1
 
