@@ -77,15 +77,17 @@ params = pc.bindParameters()
 pc.verifyParameters()
 
 
-# Link VLAN 1
-link_vlan_1 = request.LAN("link_vlan_1")
-link_vlan_1.best_effort = True
-link_vlan_1.vlan_tag = 2711
+lan1 = request.Link("link1", "vlan")
+lan2 = request.Link("link2", "vlan")
 
-# Link VLAN 2
-link_vlan_2 = request.LAN("link_vlan_2")
-link_vlan_2.best_effort = True
-link_vlan_2.vlan_tag = 2712
+lan1.setVlanTag(2711)
+lan2.setVlanTag(2712)
+
+lan1.link_multiplexing = True
+lan1.best_effort = True
+
+lan2.link_multiplexing = True
+lan2.best_effort = True
 
 
 nodeList = params.nodes.split(',')
@@ -111,24 +113,27 @@ for nodeName in nodeList:
     host.addService(pg.Execute(shell="bash", command=cmd))
 
 
-    host_iface0 = host.addInterface()
-    host_iface0.component_id = "eth2"
-    host_iface0.addAddress(pg.IPv4Address("192.168.40." + str(i+30), "255.255.255.0"))
+    
 
     if i == 0:
-        host_iface1 = host.addInterface()
-        host_iface1.component_id = "eth3"
-        host_iface1.addAddress(pg.IPv4Address("192.168.40." + str(i+25), "255.255.255.0"))
-
-
-    if i == 0:
-        # Central host
-       link_vlan_1.addInterface(host_iface0)
-       link_vlan_2.addInterface(host_iface1)
+      host_iface0 = host.addInterface()
+      host_iface0.component_id = "eth2"
+      host_iface0.addAddress(pg.IPv4Address("192.168.40." + str(i+25), "255.255.255.0"))
+      lan1.addInterface(host_iface0)
+      host_iface1 = host.addInterface()
+      host_iface1.component_id = "eth3"
+      host_iface1.addAddress(pg.IPv4Address("192.168.40." + str(i+30), "255.255.255.0"))
+      lan2.addInterface(host_iface1)
     elif i == 1:
-        link_vlan_1.addInterface(host_iface0)
+      host_iface1 = host.addInterface()
+      host_iface1.component_id = "eth3"
+      host_iface1.addAddress(pg.IPv4Address("192.168.40." + str(i+30), "255.255.255.0"))
+      lan1.addInterface(host_iface1)
     elif i == 2:
-        link_vlan_2.addInterface(host_iface0)
+      host_iface1 = host.addInterface()
+      host_iface1.component_id = "eth3"
+      host_iface1.addAddress(pg.IPv4Address("192.168.40." + str(i+30), "255.255.255.0"))
+      lan2.addInterface(host_iface1)
   
     i+=1
 
